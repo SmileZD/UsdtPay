@@ -1,20 +1,31 @@
+//++++++++配置++++++++++++
 const port = 3000;//服务运行端口
-const address = 'TNG2SSSTyTksybJEDhjnkGwAt7w4x1p8U4';//默认收银地址
+//订单配置
 const exptime = 15 * 60;//订单失效时间 默认15分钟
 const unit = 0.0001;//金额最小单位 建议不改
 //数据库配置
-const mysqlUser = 'root';
-const mysqlPassword = '123456';
+const mysqlUsername = 'root';
+const mysqlPassword = 'Zd912104410';
 const mysqlDatabase = 'usdt';
 const mysqlHost = '127.0.0.1';
 const mysqlPort = 3306;
-//
+//usdt配置
+const address = 'TNG2SSSTyTksybJEDhjnkGwAt7w4x1p8U4';//默认收银地址 余额归集地址
+const apiKey = 'defbb8c5-b5e9-4a2d-a011-fd0cd45175f1';//用于提高tron网络的可访问频率 可不填
+//++++++++配置++++++++++++
+const TronWeb = require('tronweb')
+const HttpProvider = TronWeb.providers.HttpProvider;
+const fullNode = new HttpProvider("https://api.trongrid.io");
+const solidityNode = new HttpProvider("https://api.trongrid.io");
+const eventServer = new HttpProvider("https://api.trongrid.io");
+const tronWeb = new TronWeb(fullNode,solidityNode,eventServer);
+tronWeb.setHeader({"TRON-PRO-API-KEY": apiKey});
 const bodyParser = require('body-parser')
 const express = require('express')
 const mysql = require('mysql');
 const app = express()
 var client = mysql.createConnection({
-    user: mysqlUser,
+    user: mysqlUsername,
     password: mysqlPassword,
     database: mysqlDatabase,
     host: mysqlHost,
@@ -324,7 +335,7 @@ app.get('/upay', (req, res) => {
 })
 app.get('/paystatus', (req, res) => {
     //req.query.address;
-    //查询支付结构
+    //查询支付结果
     //成功支付 content为空不调整 否则5秒后跳转url
     //res.json({ 'code': 200, 'content': '' })
     //支付部分
@@ -385,7 +396,14 @@ app.post('/createorder', (req, res) => {
         )
     }
 })
-
+app.get('/balance', (req, res) => {
+    //查询地址trc和usdt余额
+    if (!req.query.address) {
+        res.json({ code: 1, message: '参数丢失' })
+    } else {
+        res.json({ code: 0, message: '查询成功',data:{trx:0,usdt:0} })
+    }
+})
 app.listen(port, () => { console.log(`服务运行于 ${port} 端口`) })
 function checkAmount(amount, results) {
     if (checkAmountLoop(amount, results)) {
