@@ -1,7 +1,7 @@
 # UsdtPay
 开源的trc20链上usdt简易收银，有支付回调
 
-开发进度：75%
+## 开发进度：75%
 
 语言：Nodejs
 框架：Express
@@ -12,7 +12,7 @@ web.js启动后需要被nginx反代理到能被外网访问，用于显示收款
 
 privite.js启动后会提供一些接口比如下单等可以被内部服务器其他应用程序调用，不建议外网访问
 
-使用条件：
+## 使用步骤：
 
 1、获取ApiKey：https://www.trongrid.io
 不获取也可以，有访问限制；
@@ -88,18 +88,21 @@ vim private.js
 ```
 5、启动项目进行调试
 ```
+npm i
 node web
 node private
 ```
-5、正式上线
+6、正式上线
 ```
 pm2 start web.js --name usdtpayweb
 pm2 start private.js --name usdtpay
 ```
 
-API文档：
+## API文档：
 
-/createorder
+### private.js
+
+#### /createorder
 
   POST 
   入参：
@@ -116,7 +119,27 @@ API文档：
   { code: 0, message: '下单成功',data:{} }| { code: 1, message: '失败原因' }
 data:{ amount: 实际下单金额 , discount: 优惠金额 , order_sn: 内部订单号 }
 
-/upay?order=xxxxxxxxx
+#### /balance
+
+  POST 
+  入参：
+  order_sn| amount|/
+  ------- |----------|----------
+  外部订单号| 下单金额|/
+  string| string|/
+  50位以内varchar| 最多两位小数|/
+  必填| 必填|/
+
+返参：
+  成功| 失败
+  ------- |----------
+  { code: 0, message: '下单成功',data:{} }| { code: 1, message: '失败原因' }
+data:{ amount: 实际下单金额 , discount: 优惠金额 , order_sn: 内部订单号 }
+
+
+### web.js
+
+#### /upay?order=xxxxxxxxx
 
 GET
   入参：
