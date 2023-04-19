@@ -5,7 +5,7 @@ const exptime = 15 * 60;//订单失效时间 默认15分钟
 const unit = 0.0001;//金额最小单位 建议不改
 //数据库配置
 const mysqlUsername = 'root';
-const mysqlPassword = 'Zd912104410';
+const mysqlPassword = '912104410';
 const mysqlDatabase = 'usdt';
 const mysqlHost = '127.0.0.1';
 const mysqlPort = 3306;
