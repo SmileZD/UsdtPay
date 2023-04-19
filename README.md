@@ -74,18 +74,21 @@ CREATE TABLE `order`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
-4、修改配置(配置在app.js开头)
+4、修改配置(配置在js开头)
 ```
 cd UsdtPay
-vim app.js
+vim web.js
+vim private.js
 ```
 5、启动项目进行调试
 ```
-node app
+node web
+node private
 ```
 5、正式上线
 ```
-pm2 start app.js --name usdtpay
+pm2 start web.js --name usdtpayweb
+pm2 start private.js --name usdtpay
 ```
 
 API文档：
