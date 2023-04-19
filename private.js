@@ -119,3 +119,36 @@ schedule.scheduleJob(2, '0/5 * * * * ?', () => {
     
     } catch(e) {}
 })
+
+function checkAmount(amount, results) {
+    if (checkAmountLoop(amount, results)) {
+        return amount;
+    } else {
+        amount = (amount - unit).toFixed(unit.toString().length - 2)
+        return checkAmount(amount, results)
+    }
+}
+function checkAmountLoop(amount, results) {
+    for (var i = 0; i < results.length; i++) {
+        if (amount == results[i]['amount']) {
+            return false
+        }
+    }
+    return true
+}
+function getOrderSn() {
+    const now = new Date()
+    const year = now.getFullYear();
+    let month = now.getMonth() + 1;
+    let day = now.getDate();
+    let hour = now.getHours();
+    let minutes = now.getMinutes();
+    let seconds = now.getSeconds();
+    String(month).length < 2 ? (month = Number("0" + month)) : month;
+    String(day).length < 2 ? (day = Number("0" + day)) : day;
+    String(hour).length < 2 ? (hour = Number("0" + hour)) : hour;
+    String(minutes).length < 2 ? (minutes = Number("0" + minutes)) : minutes;
+    String(seconds).length < 2 ? (seconds = Number("0" + seconds)) : seconds;
+    const yyyyMMddHHmmss = `${year}${month}${day}${hour}${minutes}${seconds}`;
+    return yyyyMMddHHmmss + Math.floor((Math.random() + 1) * 100000).toString();
+}
