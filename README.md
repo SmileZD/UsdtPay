@@ -14,14 +14,15 @@ privite.js启动后会提供一些接口比如下单等可以被内部服务器�
 
 ## 使用步骤：
 
-1、获取ApiKey：https://www.trongrid.io
+### 1、获取ApiKey：
+https://www.trongrid.io
 不获取也可以，有访问限制；
 
-2、克隆项目
+### 2、克隆项目：
 ```
 git clone https://github.com/SmileZD/UsdtPay.git
 ```
-2、安装nodejs和pm2
+### 3、安装nodejs和pm2：
 ```
 #安装nodejs16
 wget https://cdn.npmmirror.com/binaries/node/latest-v16.x/node-v16.16.0-linux-x64.tar.xz
@@ -38,7 +39,7 @@ ln -s /usr/local/node-v16.16.0-linux-x64/lib/node_modules/pm2/bin/pm2 /usr/local
 ln -s /usr/local/node-v16.16.0-linux-x64/lib/node_modules/pm2/bin/pm2-dev /usr/local/bin
 ln -s /usr/local/node-v16.16.0-linux-x64/lib/node_modules/pm2/bin/pm2-docker /usr/local/bin
 ```
-3、导入数据库
+### 4、导入数据库：
 ```
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -80,74 +81,91 @@ CREATE TABLE `order`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
-4、修改配置(配置在js开头)
+### 5、修改配置(配置在js开头)：
 ```
 cd UsdtPay
 vim web.js
 vim private.js
 ```
-5、启动项目进行调试
+### 6、启动项目进行调试：
 ```
 npm i
 node web
 node private
 ```
-6、正式上线
+### 7、正式上线：
 ```
 pm2 start web.js --name usdtpayweb
 pm2 start private.js --name usdtpay
 ```
 
-## API文档：
+# API文档：
 
-### private.js
+## private.js
 
-#### /createorder
+### /createorder
 
-  POST 
-  入参：
-  order_sn| amount|/
-  ------- |----------|----------
-  外部订单号| 下单金额|/
-  string| string|/
-  50位以内varchar| 最多两位小数|/
-  必填| 必填|/
+POST 下单
 
-返参：
-  成功| 失败
-  ------- |----------
-  { code: 0, message: '下单成功',data:{} }| { code: 1, message: '失败原因' }
-data:{ amount: 实际下单金额 , discount: 优惠金额 , order_sn: 内部订单号 }
+#### 入参：
 
-#### /balance
+order_sn| amount|
+------- |----------|
+外部订单号| 下单金额|
+string| string|
+50位以内varchar| 最多两位小数|
+必填| 必填|
 
-  POST 
-  入参：
-  order_sn| amount|/
-  ------- |----------|----------
-  外部订单号| 下单金额|/
-  string| string|/
-  50位以内varchar| 最多两位小数|/
-  必填| 必填|/
+#### 返参:
 
-返参：
-  成功| 失败
-  ------- |----------
-  { code: 0, message: '下单成功',data:{} }| { code: 1, message: '失败原因' }
-data:{ amount: 实际下单金额 , discount: 优惠金额 , order_sn: 内部订单号 }
+成功|失败
+-------|----------
+{ code: 0, message: '下单成功',data:{} }| { code: 1, message: '失败原因' }
+
+data:
+
+amount|discount|order_sn|
+------|--------|--------|
+实际下单金额|优惠金额|内部订单号|
+string|string|string|
+
+### /balance
+
+POST 查询trx和usdt余额
+
+#### 入参：
+address|
+-------|
+要查询余额的地址|
+string|
+34位char|
+必填|
+
+#### 返参：
+成功| 失败
+------- |----------
+{ code: 0, message: '查询成功',data:{} }| { code: 1, message: '失败原因' }
+
+data:
+trx|usdt|
+------|--------|
+trx余额|usdt余额|
+string|string|
 
 
-### web.js
+## web.js
 
-#### /upay?order=xxxxxxxxx
+### /upay
 
-GET
-  入参：
-  order|/
-  ------- |----------
-  内部订单号| /
-  string| /
-  由createorder接口返回|/
-  必填| /
-  
- 返参：usdt收银HTML页面
+GET 获取订单的收银台html
+
+#### 入参：
+order|
+-------|
+内部订单号|
+string|
+由createorder接口返回|
+必填|
+
+#### 返参：
+usdt收银台HTML页面
