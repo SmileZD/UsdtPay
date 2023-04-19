@@ -79,4 +79,5 @@ GET
   string| /
   由createorder接口返回|/
   必填| /
-  返参：usdt收银HTML页面
+  
+ 返参：usdt收银HTML页面
