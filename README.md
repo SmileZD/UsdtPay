@@ -1,6 +1,8 @@
 # UsdtPay
 开源的trc20链上usdt简易收银，有支付回调
 
+开发进度：75%
+
 语言：Nodejs
 框架：Express
 
