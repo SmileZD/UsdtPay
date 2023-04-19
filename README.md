@@ -34,7 +34,45 @@ ln -s /usr/local/node-v16.16.0-linux-x64/lib/node_modules/pm2/bin/pm2-docker /us
 ```
 3、导入数据库
 ```
-wait
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for address
+-- ----------------------------
+DROP TABLE IF EXISTS `address`;
+CREATE TABLE `address`  (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `address` char(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '收款地址',
+  `path` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '地址路劲',
+  `key` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '地址私钥',
+  `balance` decimal(10, 2) UNSIGNED NOT NULL DEFAULT 0.00 COMMENT '累计入账金额',
+  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 1空闲 2被占用',
+  `update_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '收款地址表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for order
+-- ----------------------------
+DROP TABLE IF EXISTS `order`;
+CREATE TABLE `order`  (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_sn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '订单号',
+  `out_order_sn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '外部订单号',
+  `address` char(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '收款地址',
+  `amount` decimal(10, 4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '总金额',
+  `amount_remain` decimal(10, 4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '剩余应付金额',
+  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 1待支付 2部分支付 3支付完成 4已过期',
+  `pay_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '支付时间',
+  `create_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '下单时间',
+  `update_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `order_sn`(`order_sn`) USING BTREE COMMENT '订单号唯一',
+  UNIQUE INDEX `out_order_sn`(`out_order_sn`) USING BTREE COMMENT '外部订单号唯一'
+) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单表' ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
 ```
 4、修改配置(配置在app.js开头)
 ```
