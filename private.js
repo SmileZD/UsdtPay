@@ -90,12 +90,12 @@ app.post('/createorder', (req, res) => {
         )
     }
 })
-app.get('/balance', (req, res) => {
+app.post('/balance', (req, res) => {
     //查询address地址的trc和usdt余额
-    if (!req.query.address) {
+    if (!req.body.address) {
         res.json({ code: 1, message: '参数丢失' })
     } else {
-        request({url: 'https://api.trongrid.io/v1/accounts/'+req.query.address,headers: {"content-type": "application/json","TRON_PRO_API_KEY": apiKey}
+        request({url: 'https://api.trongrid.io/v1/accounts/'+req.query.address,headers: {"TRON_PRO_API_KEY": apiKey}
         },(err,rep,body) => {if(err){res.json({ code: 1, message: '请求失败' });return false;}
             if(body){if(body.success){
                 res.json({ code: 0, message: '查询成功',data:{trx:tronWeb.fromSun(body.data[0].balance),usdt:tronWeb.fromSun(body.data[0].trc20[0]['TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'])} })
