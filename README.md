@@ -89,6 +89,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 cd UsdtPay
 vim web.js
 vim private.js
+#在数据库address表里插入更多已激活的收款地址收款效果更好
 ```
 ### 6、启动项目进行调试：
 ```

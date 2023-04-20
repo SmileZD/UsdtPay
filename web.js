@@ -2,13 +2,14 @@
 const port = 3000;//服务运行端口
 //订单配置
 const exptime = 15 * 60;//订单失效时间 默认15分钟
-const unit = 0.0001;//金额最小单位 建议不改
 //数据库配置
 const mysqlUsername = 'root';
 const mysqlPassword = '123456';
 const mysqlDatabase = 'usdt';
 const mysqlHost = '127.0.0.1';
 const mysqlPort = 3306;
+//usdt配置
+const address = 'TNG2SSSTyTksybJEDhjnkGwAt7w4x1p8U4';//收银地址
 //++++++++配置++++++++++++
 const bodyParser = require('body-parser')
 const express = require('express')
@@ -30,13 +31,12 @@ app.get('/upay', (req, res) => {
         res.send('缺少订单号');
     } else {
         //查询订单号分配的收款地址、金额、订单过期时间
-        client.query('SELECT * FROM `order` WHERE (status = 1 OR status = 2) AND order_sn = ?', [req.query.order],
+        client.query('SELECT * FROM `order` WHERE status = 1 AND order_sn = ?', [req.query.order],
             function selectCb(err, r1) {
                 if (err) { res.json({ code: 1, message: '服务异常' }); return }
-                if (r1.length < 1) { res.send('无订单记录'); return }
+                if (r1.length < 1) { res.send('无待支付订单'); return }
                 const amount = r1[0]['amount'];
                 const time = (r1[0]['create_time'] + exptime)*1000;
-                const address = r1[0]['address'];
                 res.send(`
         <!doctype html>
         <html>
@@ -231,17 +231,11 @@ app.get('/paystatus', (req, res) => {
     if (!req.query.order) {
         res.json({code:1})
     } else {
-        client.query('SELECT status,amount,amount_remain,url FROM `order` WHERE order_sn = ?',[req.query.order],
+        client.query('SELECT status,amount,url FROM `order` WHERE order_sn = ?',[req.query.order],
         function selectCb(err, r1) {
             if (err) { res.json({ code: 1, message: '服务异常' }); return }
             if (r1.length > 0) {
                 if(r1[0]['status']==2){
-                    res.json({
-                        code:401,
-                        balance:(r1[0]['amount']-r1[0]['amount_remain']).toFixed(unit.toString().length - 2),
-                        remaining:r1[0]['amount_remain']}
-                        )
-                }else if(r1[0]['status']==3){
                     res.json({code:200,
                         content:r1[0]['url']})
                 }else{
