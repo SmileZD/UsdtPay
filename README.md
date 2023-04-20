@@ -1,7 +1,7 @@
 # UsdtPay
 开源的trc20链上usdt简易收银，有支付回调
 
-## 开发进度：75%
+## 开发进度：v1.0.0 (100%) v1.0.1(0%)
 
 语言：Nodejs
 
@@ -11,9 +11,11 @@ QQ : 912104410
 
 其他语言可以通过http协议调用它
 
-web.js启动后需要被nginx反代理到能被外网访问，用于显示收款二维码
+本项目包含web.js和private.js两个项目，需要分别启动，private.js包含两个定时任务用来轮询链上交易和订单过期更新状态
 
-privite.js启动后会提供一些接口比如下单等可以被内部服务器其他应用程序调用，不建议外网访问
+web.js启动后需要被nginx反代理到能被外网访问，用于显示收款二维码(/upay)
+
+private.js启动后会提供一些接口比如下单等可以被内部服务器其他应用程序调用，不建议外网访问
 
 ## 使用步骤：
 
@@ -48,21 +50,6 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for address
--- ----------------------------
-DROP TABLE IF EXISTS `address`;
-CREATE TABLE `address`  (
-  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `address` char(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '收款地址',
-  `path` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '地址路劲',
-  `key` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '地址私钥',
-  `balance` decimal(10, 2) UNSIGNED NOT NULL DEFAULT 0.00 COMMENT '累计入账金额',
-  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 1空闲 2被占用',
-  `update_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '收款地址表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
 -- Table structure for order
 -- ----------------------------
 DROP TABLE IF EXISTS `order`;
@@ -70,17 +57,16 @@ CREATE TABLE `order`  (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_sn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '订单号',
   `out_order_sn` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '外部订单号',
-  `address` char(34) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '收款地址',
   `amount` decimal(10, 4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '总金额',
-  `amount_remain` decimal(10, 4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '剩余应付金额',
-  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 1待支付 2部分支付 3支付完成 4已过期',
+  `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '下单成功后跳转链接',
+  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态 1待支付 2支付完成 3已过期',
   `pay_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '支付时间',
   `create_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '下单时间',
   `update_time` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `order_sn`(`order_sn`) USING BTREE COMMENT '订单号唯一',
   UNIQUE INDEX `out_order_sn`(`out_order_sn`) USING BTREE COMMENT '外部订单号唯一'
-) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 51 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单表' ROW_FORMAT = DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
@@ -89,7 +75,6 @@ SET FOREIGN_KEY_CHECKS = 1;
 cd UsdtPay
 vim web.js
 vim private.js
-#在数据库address表里插入更多已激活的收款地址收款效果更好
 ```
 ### 6、启动项目进行调试：
 ```
@@ -105,6 +90,40 @@ pm2 start private.js --name usdtpay
 
 # API文档：
 
+## web.js
+
+### /upay
+
+GET 获取订单的收银台html
+
+#### 入参：
+order|
+-------|
+内部订单号|
+string|
+由createorder接口返回|
+必填|
+
+#### 返参：
+usdt收银台HTML页面
+
+### /paystatus
+
+GET 获取订单的收银台html
+
+#### 入参：
+order|
+-------|
+内部订单号|
+string|
+由createorder接口返回|
+必填|
+
+#### 返参：
+支付中| 支付成功
+------- |----------
+{ code: 1}| { code: 200, content: '支付成功后跳转链接,下单时未传入为空,不跳转' }
+
 ## private.js
 
 ### /createorder
@@ -113,12 +132,12 @@ POST 下单
 
 #### 入参：
 
-order_sn| amount|
-------- |----------|
-外部订单号| 下单金额|
-string| string|
-50位以内varchar| 最多两位小数|
-必填| 必填|
+order_sn| amount|url|
+------- |----------|----------|
+外部订单号| 下单金额|支付后跳转链接|
+string| string|string
+50位以内varchar| 最多两位小数|255位以内varchar
+必填| 必填| 选填(不填支付成功后不跳转)|
 
 #### 返参:
 
@@ -156,37 +175,4 @@ trx|usdt|
 trx余额|usdt余额|
 string|string|
 
-
-## web.js
-
-### /upay
-
-GET 获取订单的收银台html
-
-#### 入参：
-order|
--------|
-内部订单号|
-string|
-由createorder接口返回|
-必填|
-
-#### 返参：
-usdt收银台HTML页面
-
-### /paystatus
-
-GET 获取订单的收银台html
-
-#### 入参：
-order|
--------|
-内部订单号|
-string|
-由createorder接口返回|
-必填|
-
-#### 返参：
-支付中| 支付成功
-------- |----------
-{ code: 1}| { code: 200, content: '支付成功后跳转链接,下单时未传入为空,不跳转' }
+### 更多接口开发中(生成地址、激活地址、发起转账等等)
