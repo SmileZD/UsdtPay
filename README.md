@@ -19,6 +19,9 @@ web.js启动后需要被nginx反代理到能被外网访问，用于显示收款
 
 private.js启动后会提供一些接口比如下单等可以被内部服务器其他应用程序调用，不建议外网访问
 
+收银台页面：
+![图片](https://user-images.githubusercontent.com/38121455/233242950-91ccd113-6e2d-48da-b9f9-ffe6f243cc4c.png)
+
 ## 使用步骤：
 
 ### 1、获取ApiKey：
@@ -77,6 +80,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 cd UsdtPay
 vim web.js
 vim private.js
+#修改收银地址要将新地址生成二维码png图片放置到public文件夹下
 ```
 ### 6、启动项目进行调试：
 ```
