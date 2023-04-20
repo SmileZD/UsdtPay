@@ -72,7 +72,6 @@ app.post('/balance', (req, res) => {
     request({
         url: 'https://api.trongrid.io/v1/accounts/' + addressQ, headers: { "TRON_PRO_API_KEY": apiKey }
     }, (err, rep, body) => {
-        console.log(err)
         if (err) { res.json({ code: 1, message: '请求失败' }); return false; }
         if (body) {
             try {
