@@ -27,7 +27,7 @@ git clone https://github.com/SmileZD/UsdtPay.git
 ```
 ### 3、安装nodejs和pm2：
 ```
-#安装nodejs16
+#安装nodejs
 wget https://cdn.npmmirror.com/binaries/node/latest-v16.x/node-v16.16.0-linux-x64.tar.xz
 tar -xvf node-v16.16.0-linux-x64.tar.xz
 cp -r ./node-v16.16.0-linux-x64 /usr/local/
@@ -172,3 +172,20 @@ string|
 
 #### 返参：
 usdt收银台HTML页面
+
+### /paystatus
+
+GET 获取订单的收银台html
+
+#### 入参：
+order|
+-------|
+内部订单号|
+string|
+由createorder接口返回|
+必填|
+
+#### 返参：
+支付中| 支付成功
+------- |----------
+{ code: 1}| { code: 200, content: '支付成功后跳转链接,下单时未传入为空,不跳转' }

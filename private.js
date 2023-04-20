@@ -39,6 +39,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.post('/createorder', (req, res) => {
     //amount 下单金额 最多两位小数 
     //order_sn 订单号 50位varchar
+    //url 支付成功后跳转链接 255位varchar 可不填
     if (!req.body.order_sn || !req.body.amount) {
         res.json({ code: 1, message: '参数丢失' })
     } else {
@@ -57,8 +58,8 @@ app.post('/createorder', (req, res) => {
                         const orderAddress = r1[0]['address'];
                         const amount_after = parseFloat(amount)
                         const time = Math.floor(Date.now() / 1000)
-                        client.query("INSERT INTO `usdt`.`order` (`order_sn`, `out_order_sn`, `address`, `amount`, `amount_remain`, `pay_time`, `create_time`, `update_time`) VALUES (?, ?, ?, ?, 0.00, 0, ?, ?)", [
-                            order_sn, req.body.order_sn, orderAddress, amount_after, time, time
+                        client.query("INSERT INTO `usdt`.`order` (`order_sn`, `out_order_sn`, `address`, `amount`, `amount_remain`,`url`, `pay_time`, `create_time`, `update_time`) VALUES (?, ?, ?, ?, 0.00, ? , 0, ?, ?)", [
+                            order_sn, req.body.order_sn, orderAddress, amount_after, req.body.url??'' ,time, time
                         ], function (err, r3) {
                             if (err) { res.json({ code: 1, message: '服务异常' }); return }
                             res.json({ code: 0, message: '下单成功', data: { amount: amount_after, discount: (parseFloat(amount) - amount_after).toFixed(unit.toString().length - 2), order_sn: order_sn } })
@@ -78,8 +79,8 @@ app.post('/createorder', (req, res) => {
                                 amount_after = checkAmount(amount_after, r4)
                             }
                             const time = Math.floor(Date.now() / 1000)
-                            client.query("INSERT INTO `usdt`.`order` (`order_sn`, `out_order_sn`, `address`, `amount`, `amount_remain`, `pay_time`, `create_time`, `update_time`) VALUES (?, ?, ?, ?, 0.00, 0, ?, ?)", [
-                                order_sn, req.body.order_sn, orderAddress, amount_after, time, time
+                            client.query("INSERT INTO `usdt`.`order` (`order_sn`, `out_order_sn`, `address`, `amount`, `amount_remain`,`url`, `pay_time`, `create_time`, `update_time`) VALUES (?, ?, ?, ?, 0.00, ? , 0, ?, ?)", [
+                                order_sn, req.body.order_sn, orderAddress, amount_after, req.body.url??'',time, time
                             ], function (err, r5) {
                                 if (err) { res.json({ code: 1, message: '服务异常' }); return }
                                 res.json({ code: 0, message: '下单成功', data: { amount: amount_after, discount: (parseFloat(amount) - amount_after).toFixed(unit.toString().length - 2), order_sn: order_sn } })
