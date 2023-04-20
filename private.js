@@ -84,10 +84,9 @@ schedule.scheduleJob('1', '0/10 * * * * ?', () => {
     try {
         client.query('SELECT amount,id,create_time,callback FROM `order` WHERE status = 1 ORDER BY create_time DESC',
             function selectCb(err, r1) {
-                console.log(r1)
                 if (!err && r1.length > 0) {
                     let orderDone = checkOrder(r1, r1[0]['create_time'])
-                    if (orderDone.length > 0) {
+                    if (orderDone&&orderDone.length > 0) {
                         const time = Math.floor(Date.now() / 1000)
                         client.query('UPDATE `order` SET status = 2,update_time = ? WHERE id in (?)', [time, orderDone.toString()],
                             function selectCb(err, r2) {
@@ -174,7 +173,6 @@ function checkOrder(results, time) {
                 return orderDone
             } catch (e) { return [] }
         } else {
-            console.log(err)
             return []
         }
     })
