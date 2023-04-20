@@ -132,12 +132,12 @@ POST 下单
 
 #### 入参：
 
-order_sn| amount|url|
-------- |----------|----------|
-外部订单号| 下单金额|支付后跳转链接|
-string| string|string
-50位以内varchar| 最多两位小数|255位以内varchar
-必填| 必填| 选填(不填支付成功后不跳转)|
+order_sn| amount|url|callback|
+------- |----------|----------|----------|
+外部订单号| 下单金额|收银页面支付成功后跳转链接|支付回调|
+string| string|string|string|
+50位以内varchar| 最多两位小数|255位以内varchar|255位以内varchar|
+必填| 必填| 选填(不填支付成功后不跳转)|选填(不填无支付回调)|
 
 #### 返参:
 

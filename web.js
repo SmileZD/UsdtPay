@@ -36,7 +36,7 @@ app.get('/upay', (req, res) => {
                 if (err) { res.json({ code: 1, message: '服务异常' }); return }
                 if (r1.length < 1) { res.send('无待支付订单'); return }
                 const amount = r1[0]['amount'];
-                const time = (r1[0]['create_time'] + exptime)*1000;
+                const time = (r1[0]['create_time'] + exptime) * 1000;
                 res.send(`
         <!doctype html>
         <html>
@@ -135,7 +135,7 @@ app.get('/upay', (req, res) => {
                 }, c = function() {
                     if (timeout) {
                         var b = function() {
-                            timeout ? $.ajax({type: "get",url: a.api.transactionQuery,data: {order: `+req.query.order+`},
+                            timeout ? $.ajax({type: "get",url: a.api.transactionQuery,data: {order: `+ req.query.order + `},
                                 success: function(b) {
                                     if(b.code == 200){
                                         done=true;
@@ -197,7 +197,7 @@ app.get('/upay', (req, res) => {
                 type: "get",
                 url: a.api.transactionQuery,
                 data: {
-                    order: `+req.query.order+`
+                    order: `+ req.query.order + `
                 },
                 success: function(b) {
                     if(b.code == 200){
@@ -229,22 +229,24 @@ app.get('/upay', (req, res) => {
 })
 app.get('/paystatus', (req, res) => {
     if (!req.query.order) {
-        res.json({code:1})
+        res.json({ code: 1 })
     } else {
-        client.query('SELECT status,amount,url FROM `order` WHERE order_sn = ?',[req.query.order],
-        function selectCb(err, r1) {
-            if (err) { res.json({ code: 1, message: '服务异常' }); return }
-            if (r1.length > 0) {
-                if(r1[0]['status']==2){
-                    res.json({code:200,
-                        content:r1[0]['url']})
-                }else{
-                    res.json({code:1})
+        client.query('SELECT status,amount,url FROM `order` WHERE order_sn = ?', [req.query.order],
+            function selectCb(err, r1) {
+                if (err) { res.json({ code: 1, message: '服务异常' }); return }
+                if (r1.length > 0) {
+                    if (r1[0]['status'] == 2) {
+                        res.json({
+                            code: 200,
+                            content: r1[0]['url']
+                        })
+                    } else {
+                        res.json({ code: 1 })
+                    }
+                } else {
+                    res.json({ code: 1 })
                 }
-            }else{
-                res.json({code:1})
-            }
-        })
+            })
     }
 })
 app.listen(port, () => { console.log(`服务运行于 ${port} 端口`) })
