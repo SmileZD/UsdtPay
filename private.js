@@ -100,7 +100,7 @@ schedule.scheduleJob('1', '0/10 * * * * ?', () => {
 })
 
 //定时任务 每2分钟更新一次数据库 将过期的订单状态更新(虽然前端是15分钟订单过期 但是后台可以设置两倍的超时时间 以防止客户在最后期限付款 而链上数据同步可能慢)
-schedule.scheduleJob(2, '0 0/2 * * * ? ', () => {
+schedule.scheduleJob('2', '0 0/2 * * * ? ', () => {
     try {
         const time = Math.floor(Date.now() / 1000)
         client.query('UPDATE `order` SET status = 3,update_time = ? WHERE status = 1 AND create_time < ?', [
