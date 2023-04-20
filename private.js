@@ -72,9 +72,19 @@ app.post('/balance', (req, res) => {
     request({
         url: 'https://api.trongrid.io/v1/accounts/' + addressQ, headers: { "TRON_PRO_API_KEY": apiKey }
     }, (err, rep, body) => {
+        console.log(err)
         if (err) { res.json({ code: 1, message: '请求失败' }); return false; }
-        if (body && body.success) {
-            res.json({ code: 0, message: '查询成功', data: { trx: tronWeb.fromSun(body.data[0].balance), usdt: tronWeb.fromSun(body.data[0].trc20[0]['TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t']) } })
+        if (body) {
+            try {
+                var data = JSON.parse(body)
+                if(data.success){
+                    res.json({ code: 0, message: '查询成功', data: { trx: tronWeb.fromSun(data.data[0].balance), usdt: tronWeb.fromSun(data.data[0].trc20[0]['TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t']) } })
+                }else{
+                    res.json({ code: 1, message: '请求失败' })
+                }
+            } catch (error) {
+                res.json({ code: 1, message: '请求失败' })
+            }
         } else { res.json({ code: 1, message: '请求失败' }) }
     })
 })
