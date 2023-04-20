@@ -21,6 +21,7 @@ private.js启动后会提供一些接口比如下单等可以被内部服务器�
 
 收银台页面：
 ![图片](https://user-images.githubusercontent.com/38121455/233242950-91ccd113-6e2d-48da-b9f9-ffe6f243cc4c.png)
+![图片](https://user-images.githubusercontent.com/38121455/233247424-c83564f9-ec34-4300-b732-cac66b36934a.png)
 
 ## 使用步骤：
 
