@@ -82,17 +82,48 @@ app.listen(port, () => { console.log(`服务运行于 ${port} 端口`) })
 //定时任务 每10秒查一次数据库 将待支付状态的订单收款地址查询最近交易 金额是否匹配 匹配则更新数据库
 schedule.scheduleJob('1', '0/10 * * * * ?', () => {
     try {
-        client.query('SELECT amount,id,create_time,callback FROM `order` WHERE status = 1 ORDER BY create_time DESC',
+        client.query('SELECT amount,id,create_time,callback FROM `order` WHERE status = 1 ORDER BY create_time',
             function selectCb(err, r1) {
                 if (!err && r1.length > 0) {
-                    let orderDone = checkOrder(r1, r1[0]['create_time'])
-                    if (orderDone&&orderDone.length > 0) {
-                        const time = Math.floor(Date.now() / 1000)
-                        client.query('UPDATE `order` SET status = 2,update_time = ? WHERE id in (?)', [time, orderDone.toString()],
-                            function selectCb(err, r2) {
-                                if (!err) { console.log((new Date()).toLocaleString() + ' 更新了' + r2.affectedRows + '行已完成订单:' + orderDone.toString()) }
-                            })
-                    }
+
+                    //查询收银地址最近的trc20链usdt交易
+                    request({
+                        url: 'https://api.trongrid.io/v1/accounts/' + address + '/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&only_to=true&only_confirmed=true&limit=200&min_timestamp=' + r1[0]['create_time'] + '000', headers: { "TRON_PRO_API_KEY": apiKey }
+                    }, (err, rep, body) => {
+                        if (body) {
+                            try {
+                                var data = JSON.parse(body).data
+                                var orderList = {};
+                                for (let i = 0; i < r1.length; i++) {
+                                    orderList[tronWeb.toSun(parseFloat(r1[i]['amount']))] = r1[i]
+                                }
+                                var orderDone = [];
+                                for (let i = 0; i < data.length; i++) {
+                                    if (orderList[data[i].value]) {
+                                        //交易存在 说明已完成
+                                        orderDone.push(orderList[data[i].value]['id'])
+                                        //发起支付回调
+                                        if (orderList[data[i].value]['callback']) {
+                                            //该请求可自定义 TODO
+                                            //示例 callback链接中通过get方式添加order_sn和token，当访问该callback时校验token和order_sn则认为有效支付回调
+                                            request({
+                                                url: orderList[data[i].value]['callback'], headers: {}
+                                            }, (err, rep, body) => {
+                                                console.log((new Date()).toLocaleString() + ' 发起了支付回调:' + orderList[data[i].value]['callback'])
+                                            })
+                                        }
+                                    }
+                                }
+                                if (orderDone.length > 0) {
+                                    const time = Math.floor(Date.now() / 1000)
+                                    client.query('UPDATE `order` SET status = 2, pay_time = ? ,update_time = ? WHERE id in (?)', [time, time, orderDone.toString()],
+                                        function selectCb(err, r2) {
+                                            if (!err) { console.log((new Date()).toLocaleString() + ' 更新了' + r2.affectedRows + '行已完成订单:' + orderDone.toString()) }
+                                        })
+                                }
+                            } catch (e) { }
+                        }
+                    })
                 }
             })
     } catch (e) { }
@@ -139,41 +170,4 @@ function getOrderSn() {
     String(seconds).length < 2 ? (seconds = Number("0" + seconds)) : seconds;
     const yyyyMMddHHmmss = `${year}${month}${day}${hour}${minutes}${seconds}`;
     return yyyyMMddHHmmss + Math.floor((Math.random() + 1) * 100000).toString();
-}
-function checkOrder(results, time) {
-    //查询收银地址最近的trc20链usdt交易
-    request({
-        url: 'https://api.trongrid.io/v1/accounts/' + address + '/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&only_to=true&only_confirmed=true&limit=200&min_timestamp=' + time + '000', headers: { "TRON_PRO_API_KEY": apiKey }
-    }, (err, rep, body) => {
-        if (err) { return [] }
-        if (body) {
-            try {
-                var data = JSON.parse(body).data
-                var orderList = {};
-                for (let i = 0; i < results.length; i++) {
-                    orderList[tronWeb.toSun(parseFloat(results[i]['amount']))] = results[i]
-                }
-                var orderDone = [];
-                for (let i = 0; i < data.length; i++) {
-                    if (orderList[data[i].value]) {
-                        //交易存在 说明已完成
-                        orderDone.push(orderList[data[i].value]['id'])
-                        //发起支付回调
-                        if (orderList[data[i].value]['callback']) {
-                            //该请求可自定义 TODO
-                            //示例 callback链接中通过get方式添加order_sn和token，当访问该callback时校验token和order_sn则认为有效支付回调
-                            request({
-                                url: orderList[data[i].value]['callback'], headers: {}
-                            }, (err, rep, body) => {
-                                console.log((new Date()).toLocaleString() + ' 发起了支付回调:' + orderList[data[i].value]['callback'])
-                            })
-                        }
-                    }
-                }
-                return orderDone
-            } catch (e) { return [] }
-        } else {
-            return []
-        }
-    })
 }
