@@ -117,7 +117,7 @@ usdt收银台HTML页面
 
 ### /paystatus
 
-GET 获取订单的收银台html
+GET 获取订单的支付状态
 
 #### 入参：
 order|
